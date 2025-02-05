@@ -4,6 +4,7 @@ const cors = require("cors")
 const handleErrors = require("./middlewares/error")
 // Routing
 const authRouter = require("./routes/auth-route")
+const userRouter = require("./routes/user-route")
 const app = express()
 
 // middlewares
@@ -13,6 +14,7 @@ app.use(express.json()) // For read json
 
 // Routing
 app.use("/api", authRouter)
+app.use("/api", userRouter)
 
 
 // Handle errors
