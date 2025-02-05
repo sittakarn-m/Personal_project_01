@@ -1,9 +1,10 @@
 const express = require("express")
 const morgan = require("morgan")
 const cors = require("cors")
-const app = express()
+const handleErrors = require("./middlewares/error")
 // Routing
 const authRouter = require("./routes/auth-route")
+const app = express()
 
 // middlewares
 app.use(cors()) //Allow cross domain
@@ -12,6 +13,10 @@ app.use(express.json()) // For read json
 
 // Routing
 app.use("/api", authRouter)
+
+
+// Handle errors
+app.use(handleErrors)
 
 // Start Server
 const PORT = 8000
