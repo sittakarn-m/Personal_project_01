@@ -1,9 +1,20 @@
+const createError = require("../utils/createError")
+
 exports.register = (req, res, next) => {
     //code
     try {
         // Step 1 req.boy
-        console.log(req.body)
+        const {email, firstname, lastname, password, confirmPassword} = req.body
+        // console.log(req.body)
+        console.log(email, firstname, lastname, password, confirmPassword)
+
         // Step 2 validate
+        if(!email) {
+            return createError(400, "Email is require!!!")
+        }
+        if(!firstname){
+            return createError(400, "firstname is require")
+        }
         // Step 3 Check already
         // Step 4 Encrypt bcrypt
         // Step 5 Instert to DB
@@ -13,6 +24,7 @@ exports.register = (req, res, next) => {
     } catch (error) {
         // console.log(error)
         // res.status(500).json({ message: "Server Error !" })
+        console.log("Step 2 Catch")
         next(error)
     }
 }
