@@ -1,7 +1,7 @@
 const prisma = require("../configs/prisma");
 const createError = require("../utils/createError");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 
 exports.register = async (req, res, next) => {
   try {
@@ -38,62 +38,54 @@ exports.register = async (req, res, next) => {
   }
 };
 
-
-
 exports.login = async (req, res, next) => {
   //code
   try {
-    // Step 1 req.bory
-    const {email, password} = req.body;
-    // console.log(email, password)
-
-    // Step 2 Check email password
+    // Step 1 req.body
+    const { email, password } = req.body;
+    // Step 2 Check email and password
     const profile = await prisma.profile.findFirst({
-        where: {
-            email: email,
-        }
-    })
-    if(!profile) {
-        return createError(400, "Email, password is invalid!!")
+      where: {
+        email: email,
+      },
+    });
+    if (!profile) {
+      return createError(400, "Email, Password is invalid!!");
     }
-    const isMatch = bcrypt.compareSync(password, profile.password)
-    // console.log(isMatch)
+    const isMatch = bcrypt.compareSync(password, profile.password);
 
-    if(!isMatch) {
-        return createError(400, "Eamil, password is invalid !!")
+    if (!isMatch) {
+      return createError(400, "Email, Password is invalid!!");
     }
+
     // Step 3 Generate token
     const payload = {
-        id: profile.id,
-        email: profile.email,
-        firstname: profile.firstname,
-        lastname: profile.lastname,
-        Role: profile.role,
-    }
+      id: profile.id,
+      email: profile.email,
+      firstname: profile.firstname,
+      lastname: profile.lastname,
+      role: profile.role,
+    };
     const token = jwt.sign(payload, process.env.SECRET, {
-        expiresIn:"1d",
-    })
-    console.log(token);
+      expiresIn: "1d", // เวลา สามารถ login ได้ 20 วินาที  ถ้า 1d ก์คือ 1วัน
+    });
+
+    // console.log(token);
     // Step 4 Response
-    res.json({ 
-        message: "Login Success ",
-        payload: payload,
-        token: token,
-     });
+    res.json({
+      message: "Login Success",
+      payload: payload,
+      token: token,
+    });
   } catch (error) {
     next(error);
   }
 };
 
-
-
-
 exports.currentUser = async (req, res, next) => {
-    //code
-    try {
-        res.json({message: "Hello, current user"})
-    } catch (error) {
-        next(error)
-    }
-
-}
+  try {
+    res.json({ message: "Hello, current user" });
+  } catch (error) {
+    next(error);
+  }
+};

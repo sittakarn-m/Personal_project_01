@@ -1,7 +1,26 @@
 ### Summary !!!
 ```
 ทำ server register / login 
-
+Server
+    index.js
+    /routes
+        auth-route.js
+        user-route.js
+    /controllers
+        auth-controller.js
+        user-controller.js
+    /middlewares
+        auth-middleware.js
+        error.js
+        validator.js
+    /configs
+        prisma.js
+    /prisma
+        schema.prisma
+    /utils
+        createError.js
+    .env
+    .gitignore
 ```
 
 ###  in folder Server
@@ -829,9 +848,9 @@ exports.validateWithZod = (schema) => (req, res, next) => {
 };
 ```
 
-### utild/createError.js
+### utils/createError.js
 ```js
-const createError = () => {
+const createError = (code, message) => {
     console.log("Step 1 Create Error")
     const error = new Error(message)
     error.statusCode = code;
@@ -868,6 +887,115 @@ enum Role {
   ADMIN
 }
 ```
-```js
 
+## Step 11 verify token 
+middleware/auth-middleware.js
+```js
+const createError = require("../utils/createError")
+const jwt = require("jsonwebtoken")
+
+// verify token 
+exports.authCheck = async(req, res, next) => {
+try {
+    // รับ Header จาก Client
+    const authorization = req.headers.authorization
+    console.log(authorization)
+    // Check ถ้าไม่มี Token 
+    if(!authorization) {
+        return createError(400, "Missing Token !!")
+    }
+    // Bearer token .... ใช้ split แยก req.headers.authorization ออกมาเป้น array [barrer,token]
+    const token = authorization.split(" ")[1] // split แล้วเลือกตำแหน่ง [1]
+
+    // verify // ถ้า verify ผ่านก็จะเข้า decode
+    jwt.verify(token, process.env.SECRET, (err,decode)=> {
+        console.log(err)
+        console.log(decode)
+        if(err){
+            return createError(401, "Unauthorized !!")
+        }
+        // สร้าง property user = decode (ข้อมูล user จาก token)
+        req.user = decode
+        next()
+    })
+    // console.log(token)
+    // console.log("Hello, middleware")
+    
+} catch (error) {
+    next(error)
+}}
 ```
+
+## Step 12 User route
+controllers/user-controller.js
+```js
+// 1. List all user
+// 2. Update Role
+// 3. Delete User
+const prisma = require("../configs/prisma")
+
+
+exports.listUsers = async (req, res, next) => {
+    try {
+        // findMamy จะส่งทุงรายชื่อใน table เราออกไป แต่ถ้าใส่ () เงือนไขเข้าไปก็จะเลยบางสิ่ง
+        // เลือกสิ่ง ที่อยากส่งกลับไป
+        const users = await prisma.profile.findMany({
+            // select: {
+            //     id: true,
+            //     email: true,
+            //     firstname: true,
+            //     role: true,
+            //     updatedAt: true,
+            //     createdAt: true
+            // }
+            // omit เอาทุงอย่างนอกจาก ที่ เลือก
+            omit: {
+                password: true,
+            }
+        })
+        console.log(users)
+        res.json({ message: "Hello, list users", result: users })
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.updateRole = async (req, res, next) => {
+    try {
+        const { id, role } = req.body
+        console.log(id, role)
+        // console.log(typeof id)
+
+        // update อะไรที่ไหน 
+        // update ที่ id... เปลี่ยน role เป็น ... ส่งจาก postman
+        const updated = await prisma.profile.update({
+            where: {
+                id: Number(id),
+            },
+            data: {
+                role: role,
+            }
+        })
+
+        res.json({ message: "Update Success" })
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.deleteUser = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const deleted = await prisma.profile.delete({
+            where: {
+                id: Number(id),
+            },
+        })
+        console.log(deleted)
+        res.json({ message: "Deleted" })
+    } catch (error) {
+        next(error)
+    }
+}
+```
+

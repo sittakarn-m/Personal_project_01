@@ -2,6 +2,7 @@ const { z } = require("zod")
 
 //npm i zod
 //TEST Validator
+// เชคว่า ส่งข้อมูลมาถูกต้องครบถวนตามที่ต้องการไหม
 
 exports.registerSchema = z.object({
     email: z.string()
