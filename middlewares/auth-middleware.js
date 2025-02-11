@@ -22,7 +22,7 @@ try {
             return createError(401, "Unauthorized !!")
         }
         // สร้าง property user = decode (ข้อมูล user จาก token)
-        req.user = decode
+        req.user = decode // ส่ง req.user ออกไปใช้ต่อ
         next()
     })
     // console.log(token)
